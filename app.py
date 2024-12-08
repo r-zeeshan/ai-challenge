@@ -1,4 +1,4 @@
-# app.py
+# app/main.py
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -10,14 +10,15 @@ import uvicorn
 
 app = FastAPI(title="Accident Prediction API")
 
-class PredictionRequest(BaseModel):
-    year: int
-    month: int
+# Import Pydantic models
+from app.schemas.prediction_request import PredictionRequest
 
-with open('auto_arima_model.pkl', 'rb') as file:
+# Load the trained auto_arima model at startup
+with open('app/models/auto_arima_model.pkl', 'rb') as file:
     model = pickle.load(file)
 
-
+# Define the last training date based on your training data
+# Update this if your training data changes
 LAST_TRAINING_DATE = pd.to_datetime('2020-12-01')
 
 @app.post("/predict", response_model=dict)
@@ -56,16 +57,12 @@ def predict(request: PredictionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during prediction: {str(e)}")
 
+    # Extract the forecast for the requested date
     predicted_value = forecast[-1]
-
-    lower_ci = conf_int[-1, 0]
-    upper_ci = conf_int[-1, 1]
-
+    
+    # Prepare the response
     response = {
         "prediction": round(float(predicted_value), 2)
     }
 
     return response
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)

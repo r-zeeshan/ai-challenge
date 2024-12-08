@@ -1,4 +1,4 @@
-# app/main.py
+# app.py
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -10,11 +10,13 @@ import uvicorn
 
 app = FastAPI(title="Accident Prediction API")
 
-# Import Pydantic models
-from app.schemas.prediction_request import PredictionRequest
+# Define the request body model
+class PredictionRequest(BaseModel):
+    year: int
+    month: int
 
 # Load the trained auto_arima model at startup
-with open('app/models/auto_arima_model.pkl', 'rb') as file:
+with open('auto_arima_model.pkl', 'rb') as file:
     model = pickle.load(file)
 
 # Define the last training date based on your training data
@@ -59,7 +61,7 @@ def predict(request: PredictionRequest):
 
     # Extract the forecast for the requested date
     predicted_value = forecast[-1]
-    
+
     # Prepare the response
     response = {
         "prediction": round(float(predicted_value), 2)

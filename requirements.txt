@@ -1,6 +1,7 @@
+numpy
+sklearn
 fastapi
 uvicorn
 pandas
-numpy
 pmdarima
 statsmodels
